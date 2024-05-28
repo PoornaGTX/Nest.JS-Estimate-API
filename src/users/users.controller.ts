@@ -8,6 +8,8 @@ import {
   Query,
   Patch,
   NotFoundException,
+  Session,
+  BadRequestException,
 } from '@nestjs/common';
 import { createUserDto } from './dtos/create-user.dto';
 import { UsersService } from './users.service';
@@ -24,14 +26,46 @@ export class UsersController {
     private AuthService: AuthService,
   ) {}
 
+  // @Get('/colors/:color')
+  // setColor(@Param('color') color: string, @Session() Session: any) {
+  //   Session.color = color;
+  // }
+
+  // @Get('/colors')
+  // getColor(@Session() session: any) {
+  //   return session.color;
+  // }
+
+  @Get('/whoami')
+  setColor(@Session() Session: any) {
+    const user = this.UsersService.findOne(Session.userId);
+
+    if (!user) {
+      throw new BadRequestException('no user');
+    }
+
+    return user;
+  }
+
   @Post('/signup')
-  createUser(@Body() body: createUserDto) {
-    return this.AuthService.signup(body.email, body.password);
+  async createUser(@Body() body: createUserDto, @Session() session: any) {
+    const user = await this.AuthService.signup(body.email, body.password);
+    session.userId = user.id;
+
+    return user;
   }
 
   @Post('/signin')
-  signin(@Body() body: createUserDto) {
-    return this.AuthService.signin(body.email, body.password);
+  async signin(@Body() body: createUserDto, @Session() session: any) {
+    const user = await this.AuthService.signin(body.email, body.password);
+    session.userId = user.id;
+
+    return user;
+  }
+
+  @Post('/signout')
+  async signout(@Session() session: any) {
+    session.userId = null;
   }
 
   // @UseInterceptors(new SerializeInterceptor(UserDto))
