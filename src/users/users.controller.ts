@@ -14,15 +14,24 @@ import { UsersService } from './users.service';
 import { updateUserDto } from './dtos/update-user.dto';
 import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { UserDto } from './dtos/user.dto';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 @Serialize(UserDto) //this dto is reposnsible for send the reponse without password
 export class UsersController {
-  constructor(private UsersService: UsersService) {}
+  constructor(
+    private UsersService: UsersService,
+    private AuthService: AuthService,
+  ) {}
 
   @Post('/signup')
   createUser(@Body() body: createUserDto) {
-    return this.UsersService.create(body.email, body.password);
+    return this.AuthService.signup(body.email, body.password);
+  }
+
+  @Post('/signin')
+  signin(@Body() body: createUserDto) {
+    return this.AuthService.signin(body.email, body.password);
   }
 
   // @UseInterceptors(new SerializeInterceptor(UserDto))
