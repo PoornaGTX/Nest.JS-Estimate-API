@@ -12,8 +12,11 @@ import {
 import { createUserDto } from './dtos/create-user.dto';
 import { UsersService } from './users.service';
 import { updateUserDto } from './dtos/update-user.dto';
+import { Serialize } from 'src/interceptors/serialize.interceptor';
+import { UserDto } from './dtos/user.dto';
 
 @Controller('auth')
+@Serialize(UserDto) //this dto is reposnsible for send the reponse without password
 export class UsersController {
   constructor(private UsersService: UsersService) {}
 
@@ -21,6 +24,8 @@ export class UsersController {
   createUser(@Body() body: createUserDto) {
     return this.UsersService.create(body.email, body.password);
   }
+
+  // @UseInterceptors(new SerializeInterceptor(UserDto))
 
   @Get('/:id')
   //http://localhost:3000/auth/2
@@ -30,6 +35,8 @@ export class UsersController {
     if (!user) {
       throw new NotFoundException('user not found');
     }
+
+    return user;
   }
 
   @Get()
