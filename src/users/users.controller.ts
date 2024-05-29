@@ -9,7 +9,7 @@ import {
   Patch,
   NotFoundException,
   Session,
-  BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import { createUserDto } from './dtos/create-user.dto';
 import { UsersService } from './users.service';
@@ -17,6 +17,9 @@ import { updateUserDto } from './dtos/update-user.dto';
 import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { UserDto } from './dtos/user.dto';
 import { AuthService } from './auth.service';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { User } from './user.entity';
+import { AuthGurd } from 'src/gurds/auth.gurd';
 
 @Controller('auth')
 @Serialize(UserDto) //this dto is reposnsible for send the reponse without password
@@ -36,14 +39,20 @@ export class UsersController {
   //   return session.color;
   // }
 
+  // @Get('/whoami')
+  // setColor(@Session() Session: any) {
+  //   const user = this.UsersService.findOne(Session.userId);
+
+  //   if (!user) {
+  //     throw new BadRequestException('no user');
+  //   }
+
+  //   return user;
+  // }
+
   @Get('/whoami')
-  setColor(@Session() Session: any) {
-    const user = this.UsersService.findOne(Session.userId);
-
-    if (!user) {
-      throw new BadRequestException('no user');
-    }
-
+  @UseGuards(AuthGurd)
+  setColor(@CurrentUser() user: User) {
     return user;
   }
 
